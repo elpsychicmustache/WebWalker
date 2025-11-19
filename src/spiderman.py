@@ -13,7 +13,7 @@ def main() -> None:
         directories = file.read().strip()
 
     main_directory_asset = instantiate_directory_object("/", directories, running_directory_list)
-    running_directory_list.update(main_directory_asset.child_directories)
+    running_directory_list.update(main_directory_asset.children)
 
     main_directory_asset.print_asset_list()
 
