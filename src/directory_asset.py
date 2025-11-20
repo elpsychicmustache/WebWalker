@@ -38,6 +38,8 @@ class DirectoryAsset():
         print("- " + self.name)
         for directory in self.children.keys():
             print("  - " + directory)
+            if self.children[directory].children:
+                self.children[directory].print_asset_list()
 
     def add_child(self, child:"DirectoryAsset") -> "DirectoryAsset":
         child.parent_directory = self
