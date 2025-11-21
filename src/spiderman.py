@@ -16,7 +16,8 @@ def main() -> None:
     running_directory_list.update(main_directory_asset.children)
 
     main_directory_asset.print_asset_list()
-
+    main_directory_asset.populate_child_directories()
+    main_directory_asset.print_asset_list()
 
 def get_parent_path() -> "PosixPath":
     script_path = Path(__file__).resolve()

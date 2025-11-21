@@ -1,3 +1,5 @@
+from pathlib import Path
+
 class DirectoryAsset():
     def __init__(self, name:str, level:int, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
         self.name = name
@@ -35,15 +37,33 @@ class DirectoryAsset():
         self.children = dict(sorted(self.children.items()))
 
     def print_asset_list(self) -> None:
-        print("- " + self.name)
+        if not self.parent:
+                print("- " + self.name)
         for directory in self.children.keys():
-            print("  - " + directory)
+            print(" " * self.level, end="")
+            print("- " + directory)
             if self.children[directory].children:
                 self.children[directory].print_asset_list()
 
     def add_child(self, child:"DirectoryAsset") -> "DirectoryAsset":
         child.parent_directory = self
         return self.children.setdefault(child.name, child)
+
+    def populate_child_directories(self) -> None:
+        child_name = input("Please enter the child directory name: ")
+
+        if not self.children.get(child_name):
+            raise KeyError(f"[!] {child_name} is not a valid directory of {self.name}")
+
+        file_input_name = input("Please enter the input file name: ")
+
+        data_path = Path(__file__).resolve().parent.parent / "data" / file_input_name
+
+        with open(data_path, "r") as file:
+            directories = file.read().strip()
+
+        self.children[child_name].populate_directories(directories, None)
+
 
     def remove_child() -> None:
         pass
