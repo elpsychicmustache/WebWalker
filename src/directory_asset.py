@@ -1,13 +1,17 @@
 from pathlib import Path
 
 class DirectoryAsset():
+    master_list = []
+
     def __init__(self, name:str, level:int, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
         self.name = name
-        self.level = level
+        self.level = level  # recommended to start with 2
         self.parent = parent
         self.children = children or {}
 
-    def populate_directories(self, directory_string_list:str, running_directory_list:list[str]) -> None:
+        DirectoryAsset.master_list.append(self.name)  # keeping track of a master list to prevent recursive entries
+
+    def populate_directories(self, directory_string_list:str) -> None:
         directories = set(
                 directory_string_list
                 .replace("[", "")
@@ -26,6 +30,8 @@ class DirectoryAsset():
                 continue
             elif "#" in directory:
                 continue
+            elif directory in DirectoryAsset.master_list:
+                continue
             else:
                 directories_to_add.add(directory)
 
@@ -38,7 +44,7 @@ class DirectoryAsset():
 
     def print_asset_list(self) -> None:
         if not self.parent:
-                print("- " + self.name)
+                print("- " + self.name)  # needed to prevent double printing of the directory name
         for directory in self.children.keys():
             print(" " * self.level, end="")
             print("- " + directory)
@@ -62,8 +68,7 @@ class DirectoryAsset():
         with open(data_path, "r") as file:
             directories = file.read().strip()
 
-        self.children[child_name].populate_directories(directories, None)
-
+        self.children[child_name].populate_directories(directories)
 
     def remove_child() -> None:
         pass

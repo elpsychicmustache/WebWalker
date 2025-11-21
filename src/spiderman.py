@@ -12,7 +12,7 @@ def main() -> None:
     with open(input_file, "r") as file:
         directories = file.read().strip()
 
-    main_directory_asset = instantiate_directory_object("/", directories, running_directory_list)
+    main_directory_asset = instantiate_directory_object("/", directories)
     running_directory_list.update(main_directory_asset.children)
 
     main_directory_asset.print_asset_list()
@@ -25,9 +25,9 @@ def get_parent_path() -> "PosixPath":
     return project_root
 
 
-def instantiate_directory_object(parent_directory, directory_list, running_directory_list) -> DirectoryAsset:
-    directory_asset = DirectoryAsset(parent_directory, 0)
-    directory_asset.populate_directories(directory_list, running_directory_list)
+def instantiate_directory_object(parent_directory, directory_list) -> DirectoryAsset:
+    directory_asset = DirectoryAsset(parent_directory, 2)
+    directory_asset.populate_directories(directory_list)
     return directory_asset
 
 
