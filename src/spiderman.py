@@ -6,7 +6,11 @@ from directory_navigator import DirectoryNavigator
 def main() -> None:
     project_root = get_parent_path()
     input_file = project_root / "data" / "input.txt"
-    output_file = project_root / "data" / "output.txt"
+    output_file = project_root / "directory_tree.txt"
+
+    # TODO: The following line is not actually used yet, but will be once the program has different
+    #   ways to populate the output file.
+    check_for_output_file(output_file)
 
     # TODO: eventually, this will need to be changed to checking if a directory is already populated
     #   for now, this will just be the entry point.
@@ -15,8 +19,11 @@ def main() -> None:
 
     main_directory_asset = instantiate_directory_object("/", directories)
 
+
+    # Entering the main loop.
     navigator = DirectoryNavigator(main_directory_asset)
 
+    # TODO: Remove the following after they are ported as options into directory_navigator.
     main_directory_asset.populate_child_directories()
     main_directory_asset.print_asset_list()
 
@@ -24,6 +31,11 @@ def get_parent_path() -> "PosixPath":
     script_path = Path(__file__).resolve()
     project_root = script_path.parent.parent
     return project_root
+
+
+def check_for_output_file(output_file:"PosixPath"):
+    # TODO: Check if user wants to load data, then do some validation and loading
+    return output_file.resolve().exists()
 
 
 def instantiate_directory_object(parent_directory, directory_list) -> DirectoryAsset:
