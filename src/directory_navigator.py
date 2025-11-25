@@ -11,7 +11,7 @@ class DirectoryNavigator:
                 1: ["Show directory tree", self.show_current_directory_tree],
                 2: ["Populate child directory", self.populate_child_directory],
                 3: ["Add a directory", self.add_child_directory],
-                3: ["Change directory", self.change_directory]
+                4: ["Change directory", self.change_directory]
                 }
 
         # Setting the quit option, which should be the last option of main_options
