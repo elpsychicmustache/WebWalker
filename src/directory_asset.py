@@ -44,7 +44,11 @@ class DirectoryAsset():
 
     def print_asset_list(self) -> None:
         if not self.parent:
-                print("- " + self.name)  # needed to prevent double printing of the directory name
+            print("- " + self.name)  # needed to prevent double printing of the directory name
+        if not self.children:
+            print(f"[!] No subdirectories found for {self.name}")
+            return  # exit the function
+
         for directory in self.children.keys():
             print(" " * self.level, end="")
             print("- " + directory)
