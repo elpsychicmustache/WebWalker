@@ -4,14 +4,38 @@ class DirectoryAsset():
     master_list = []
 
     def __init__(self, name:str, level:int, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
+        """Create a DirectoryAsset object, which represents a directory with a possible parent or children nodes.
+
+        To prevent recursion, a DirectoryAsset should only have one parent node. Any instantiated DirectoryAsset will be added to the
+        master_list class variable to prevent duplicate directories from appearing (again, to prevent recursion).
+        If this is the first DirectoryAsset object, it is recommended to start with level=0.
+
+        :param name: The directory name.
+        :type name: str
+        :param level: The hierarchy level of a directory. Children will be appended with level+=2
+        :type level: int
+        :param parent: The parent DirectoryAsset.
+        :type parent: DirectoryAsset
+        :param children: A dictionary containing the child's name, and the child DirectoryAsset object.
+        :type children: dict[str, DirectoryAsset]
+        """
         self.name = name
-        self.level = level  # recommended to start with 2
+        self.level = level
         self.parent = parent
         self.children = children or {}
 
         DirectoryAsset.master_list.append(self)  # keeping track of a master list to prevent recursive entries
 
     def populate_directories(self, directory_string_list:str) -> None:
+        """Populate children directories.
+
+        The way children directories are bulk populated is by running walkman.js, and saving the results as a text file.
+        This method handles the list as a string, drops malformed entries, and splits each entry into a DirectoryAsset
+        with self as the parent.
+
+        :param directory_string_list: The results from walkman.js as a text file.
+        :type directory_string_list: str like list
+        """
         directories = set(
                 directory_string_list
                 .replace("[", "")
@@ -30,6 +54,7 @@ class DirectoryAsset():
                 continue
             elif "#" in directory:
                 continue
+            # The following two lines are needed in case the directory exists as a child (or parent) somewhere else.
             elif directory in [x.name for x in DirectoryAsset.master_list]:
                 continue
             else:
@@ -37,14 +62,38 @@ class DirectoryAsset():
 
         for directory in directories_to_add:
             child_directory = DirectoryAsset(directory, level=self.level+2, parent=self)
-            self.add_child(child_directory)
+            self.add_child(child_directory)  # this creates the dictionary entry for children
 
-        # sorting children directories by alphabetical order
+    def add_child(self, child:"DirectoryAsset"=None) -> "DirectoryAsset":
+        """Add a single child to self.
+
+        Currently, this will only accept a DirectoryAsset. In future iterations, I plan
+        to allow an empty child, and allow the user to interactively add a child directory.
+
+        :param child: The DirectoryAsset to as a child to self.
+        :type child: DirectoryAsset
+        """
+        # TODO: child=None should be handled differently; i.e. interactively created
+        child.parent_directory = self
+
+        self.children.setdefault(child.name, child)  # adding child as directory
+        self.sort_children()  # sort children based by alphabetical order
+
+    def sort_children(self) -> None:
+        """Sorts children directories by alphabetical order."""
         self.children = dict(sorted(self.children.items()))
 
     def print_asset_list(self) -> None:
+        """Print the directory tree from the perspective of self.
+
+        I am currently researching how to do curses. Hence, future iteration should probably
+        return this as a string instead of printing directly to stdout.
+        """
+        # The following two lines are needed to prevent double printing of directory names
+        # between child and parent. However, this has the unintended consequence of
+        # not printing self.name if self is a child to a DirectoryAsset.
         if not self.parent:
-            print("- " + self.name)  # needed to prevent double printing of the directory name
+            print("- " + self.name)
         if not self.children:
             print(f"[!] No subdirectories found for {self.name}")
             return  # exit the function
@@ -55,13 +104,14 @@ class DirectoryAsset():
             if self.children[directory].children:
                 self.children[directory].print_asset_list()
 
-    def add_child(self, child:"DirectoryAsset"=None) -> "DirectoryAsset":
-        # TODO: child=None should be handled differently; i.e. interactively created
-        child.parent_directory = self
-
-        return self.children.setdefault(child.name, child)
-
     def populate_child_directories(self) -> None:
+        """Running this method allows the user to populate children directores from a direct child.
+
+        This is an interactive method, meaning that when it is called, the user must interact with
+        the prompts.
+        """
+        # TODO: Would it be better to have arguments, and if the arguments don't exist
+        # then have the user interactively build it out?
         child_name = input("Please enter the child directory name: ")
 
         if not self.children.get(child_name):
@@ -77,4 +127,8 @@ class DirectoryAsset():
         self.children[child_name].populate_directories(directories)
 
     def remove_child() -> None:
+        """Remove a child directory.
+
+        Not currently implemented. Running this does nothing.
+        """
         pass
