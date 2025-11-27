@@ -104,6 +104,25 @@ class DirectoryAsset():
             if self.children[directory].children:
                 self.children[directory].print_asset_list()
 
+    def get_asset_list(self) -> list[str]:
+        """Returns a string list version of print_asset_list
+
+        :returns: A list containing the names of the directory assets.
+        :rtype: list[str]
+        """
+        asset_list = []
+
+        if not self.children:
+            raise IndexError(f"[!] No subdirectories found for {self.name}")
+        if not self.parent:
+            asset_list.append("- " + self.name)
+        for directory in self.children.keys():
+            asset_list.append(" "*self.level + "- " + directory)
+            if self.children[directory].children:
+                asset_list + self.children[directory].get_asset_list()
+
+        return asset_list
+
     def populate_child_directories(self) -> None:
         """Running this method allows the user to populate children directores from a directly linked child node.
 

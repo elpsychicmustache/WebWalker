@@ -101,11 +101,38 @@ class DirectoryNavigator:
         This means that any parent directories are ignored. To show all directories,
         it is recommended to be in the root directory.
         """
-        _clear_screen()
+        self.stdscr.clear()
 
-        self.current_directory.print_asset_list()
+        directory_list = self.current_directory.get_asset_list()
 
-        input("Press ENTER . . .")
+        last_available_line = curses.LINES - 1
+
+        # The following lines print the directories to the screen, one window at a time.
+        current_print_line = 0
+        for index in range(len(directory_list)):
+            if current_print_line < last_available_line-1:  # keeping last_available_line for status
+                self.stdscr.addstr(current_print_line, 0, directory_list[index])
+                current_print_line += 1
+            else:
+                # Printing the last directory that can be shown here; otherwise, we lose 1 directory every refresh
+                # due to the else statement still incrementing index
+                self.stdscr.addstr(current_print_line, 0, directory_list[index])
+                self.stdscr.addstr(last_available_line, 0, 
+                                   f"{index + 1} out of {len(directory_list)} directories printed. Print any key to continue.", 
+                                   curses.A_REVERSE
+                                   )
+                self.stdscr.refresh()
+                current_print_line = 0
+                self.stdscr.getch()
+                self.stdscr.clear()
+
+        self.stdscr.addstr(last_available_line, 0,
+                           f"All directories printed. Press any key to exit.",
+                           curses.A_REVERSE
+                           )
+
+        self.stdscr.refresh()
+        self.stdscr.getch()
 
     def show_main_menu(self) -> int:
         """Displays the main menu options."""
