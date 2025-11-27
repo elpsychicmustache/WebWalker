@@ -25,7 +25,15 @@ class DirectoryNavigator:
         :type current_directory: DirectoryAsset
         """
         self.main_options = self.create_options_menu()
+
+        # Setting curses parameters
         self.stdscr = stdscr
+        curses.echo(True)
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+        self.GREEN_ALERT = curses.color_pair(1)
+        self.RED_ALERT = curses.color_pair(2)
+
 
         self.current_directory = current_directory
 
@@ -73,7 +81,7 @@ class DirectoryNavigator:
         # self.main_options.get(option)[1]()  # [1] is the function, so must use () to call the function
         while option != max(self.main_options.keys()):
             # run the function that was requested
-            # self.main_options[option][1]()
+            self.main_options[option][1]()
 
             self.stdscr.clear()
             # reshow main menu
@@ -137,16 +145,24 @@ class DirectoryNavigator:
 
         Nothing will happen if the directory being called does not exist in the master_list of DirectoryAsset.
         """
-        new_directory_name = input("[+] Please enter the name of the directory to change to: ")
+        self.stdscr.clear()
+        new_directory_prompt = "[+] Please enter the name of the directory to change to: "
+        self.stdscr.addstr(0, 0, new_directory_prompt)
+        new_directory_name = self.stdscr.getstr(0, len(new_directory_prompt)).decode()
+
         try:
             directory_location:int = [x.name for x in DirectoryAsset.master_list].index(new_directory_name)
         except ValueError:
-            print(f"[!] '{new_directory_name}' is not a recognized directory.")
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, f"[!] '{new_directory_name}' is not a recognized directory. Nothing happened.", self.RED_ALERT)
         else:
             self.current_directory = DirectoryAsset.master_list[directory_location]
-            print(f"Successfully changed to '{new_directory_name}'.")
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, f"[+] Successfully changed to '{new_directory_name}'.", self.GREEN_ALERT)
 
-        input("Press ENTER ... ")
+        closing_message = "Press ENTER ..."
+        self.stdscr.addstr(1, 0, closing_message)
+        self.stdscr.getch(1, len(closing_message))
 
     def quit_program(self) -> None:
         """Clears the screen.
@@ -156,4 +172,4 @@ class DirectoryNavigator:
         case future clean up is needed before actually quitting the program. It is also required
         to follow the main_menu attribute convention by having a function to call. None causes an error.
         """
-        _clear_screen()
+        self.stdscr.clear()
