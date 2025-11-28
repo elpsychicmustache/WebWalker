@@ -153,9 +153,30 @@ class DirectoryNavigator:
 
         Actual interaction occurs in the populate_child_directories() method.
         """
-        _clear_screen()
-        # TODO: Move functionality from populate_child_directories to this method.
-        self.current_directory.populate_child_directories()
+        self.stdscr.clear()
+
+        input_banner = "[+] Please enter the name of the child directory: "
+        self.stdscr.addstr(0, 0, input_banner)
+        child_name:str = self.stdscr.getstr(0, len(input_banner)).decode()
+
+        if not self.current_directory.children.get(child_name):
+            self.stdscr.clear()
+            self.stdscr.addstr(0, 0, f"[!] {child_name} is not a valid child directory. Nothing happened ...", self.RED_ALERT)
+            # TODO: Ask if user wants to create the directory. Before doing so, the directory needs to be checked against the master list.
+            self.stdscr.getch(1, 0)
+            return  # end this function
+
+        file_input_banner = "[+] Please enter the name of the file from which to populate the directory: "
+        self.stdscr.addstr(1, 0, file_input_banner)
+        file_name:str = self.stdscr.getstr(1, len(file_input_banner)).decode()
+
+        self.current_directory.populate_child_directories(child_name, file_name)
+
+        self.stdscr.clear()
+        self.stdscr.addstr(0, 0, f"[+] {child_name} directories have been populated!", self.GREEN_ALERT)
+        closing_message = "Press ENTER ..."
+        self.stdscr.addstr(1, 0, closing_message)
+        self.stdscr.getch(1, len(closing_message))
 
     def add_child_directory(self) -> None:
         """Creates a single child directory to current_directory.

@@ -123,7 +123,7 @@ class DirectoryAsset():
 
         return asset_list
 
-    def populate_child_directories(self) -> None:
+    def populate_child_directories(self, child_directory_name:str, input_file_name:str) -> None:
         """Running this method allows the user to populate children directores from a directly linked child node.
 
         The benefit of this is being able to populate children directories,
@@ -131,21 +131,13 @@ class DirectoryAsset():
 
         This is an interactive method, meaning that when it is called, the user must interact with prompts.
         """
-        # TODO: Would it be better to have arguments, and if the arguments don't exist
-        # then have the user interactively build it out?
-        child_name = input("Please enter the child directory name: ")
 
-        if not self.children.get(child_name):
-            raise KeyError(f"[!] {child_name} is not a valid directory of {self.name}")
-
-        file_input_name = input("Please enter the input file name: ")
-
-        data_path = Path(__file__).resolve().parent.parent / "data" / file_input_name
+        data_path = Path(__file__).resolve().parent.parent / "data" / input_file_name
 
         with open(data_path, "r") as file:
             directories = file.read().strip()
 
-        self.children[child_name].populate_directories(directories)
+        self.children[child_directory_name].populate_directories(directories)
 
     def remove_child() -> None:
         """Remove a child directory.
