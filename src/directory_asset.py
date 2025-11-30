@@ -84,7 +84,7 @@ class DirectoryAsset():
         """Sorts children directories by alphabetical order."""
         self.children = dict(sorted(self.children.items()))
 
-    def print_asset_list(self) -> None:
+    def print_asset_list(self, file_name:"PosixPath"=None) -> None:
         """Print the directory tree from the perspective of self.
 
         I am currently researching how to do curses. Hence, future iteration should probably
@@ -94,16 +94,16 @@ class DirectoryAsset():
         # between child and parent. However, this has the unintended consequence of
         # not printing self.name if self is a child to a DirectoryAsset.
         if not self.parent:
-            print("- " + self.name)
+            print("- " + self.name, file=file_name)
         if not self.children:
-            print(f"[!] No subdirectories found for {self.name}")
+            print(f"[!] No subdirectories found for {self.name}", file=file_name)
             return  # exit the function
 
         for directory in self.children.keys():
-            print(" " * self.level, end="")
-            print("- " + directory)
+            print(" " * self.level, end="", file=file_name)
+            print("- " + directory, file=file_name)
             if self.children[directory].children:
-                self.children[directory].print_asset_list()
+                self.children[directory].print_asset_list(file_name=file_name)
 
     def get_asset_list(self) -> list[str]:
         """Returns a string list version of print_asset_list
@@ -138,9 +138,14 @@ class DirectoryAsset():
 
         self.children[child_directory_name].populate_directories(directories)
 
-    def remove_child() -> None:
+    def remove_child(self) -> None:
         """Remove a child directory.
 
         Not currently implemented. Running this does nothing.
         """
         pass
+
+    def create_output_file(self, output_file_name:str="output.txt") -> None:
+        data_path = Path(__file__).parent.parent.resolve()
+        data_path = data_path / "data" / output_file_name
+        self.print_asset_list(file_name=data_path)

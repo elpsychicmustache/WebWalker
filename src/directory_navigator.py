@@ -55,6 +55,7 @@ class DirectoryNavigator:
                 ("Populate child directory", self.populate_child_directory),
                 ("Add a directory", self.add_child_directory),
                 ("Change directory", self.change_directory),
+                ("Save directory tree", self.save_directory),
                 # Add any options above "Quit" - that way, quit is last
                 ("Quit", self.quit_program)
                 ]
@@ -223,6 +224,9 @@ class DirectoryNavigator:
         closing_message = "Press ENTER ..."
         self.stdscr.addstr(1, 0, closing_message)
         self.stdscr.getch(1, len(closing_message))
+
+    def save_directory(self) -> None:
+        pass
 
     def quit_program(self) -> None:
         """Clears the screen.
