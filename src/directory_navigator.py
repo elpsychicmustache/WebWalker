@@ -226,7 +226,27 @@ class DirectoryNavigator:
         self.stdscr.getch(1, len(closing_message))
 
     def save_directory(self) -> None:
-        pass
+        self.stdscr.clear()
+
+        banner = f"[+] Currently in '{self.current_directory.name}': {len(DirectoryAsset.master_list)} directories exist"
+        self.stdscr.addstr(0,0, banner, curses.A_REVERSE)
+
+        input_banner = "[+] Please enter the name of the output file (default 'output.txt'): "
+        self.stdscr.addstr(1, 0, input_banner)
+        file_name = self.stdscr.getstr(1, len(input_banner)).decode()
+
+        if file_name:
+            self.stdscr.addstr(2, 0, f"Saving to data/{file_name}...")
+            self.current_directory.create_output_file(output_file_name)
+            self.stdscr.addstr(3, 0, f"[+] Saved to data/{file_name}!", self.GREEN_ALERT)
+        else:
+            self.stdscr.addstr(2, 0, "Saving to data/outputfile.txt ...")
+            self.current_directory.create_output_file()
+            self.stdscr.addstr(3, 0, f"[+] Saved to data/outputfile.txt", self.GREEN_ALERT)
+
+        closing_banner = "Press ENTER ..."
+        self.stdscr.addstr(4, 0, closing_banner)
+        self.stdscr.getch(4, len(closing_banner))
 
     def quit_program(self) -> None:
         """Clears the screen.
