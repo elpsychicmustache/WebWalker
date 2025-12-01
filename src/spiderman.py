@@ -22,12 +22,14 @@ def main(stdscr) -> None:
     output_file:str = args.output_file
 
     project_root = get_parent_path()
-    input_file = project_root / "data" / input_file
+    directories:str = None
 
-    # TODO: eventually, this will need to be changed to checking if a directory is already populated
-    #   for now, this will just be the entry point.
-    with open(input_file, "r") as file:
-        directories = file.read().strip()
+    # if input_file was provided, grab the data
+    if input_file:
+        input_file = project_root / "data" / input_file
+
+        with open(input_file, "r") as file:
+            directories = file.read().strip()
 
     # Populating the root directory.
     main_directory_asset = instantiate_directory_object(parent_directory_name=root_directory_name, directory_list=directories)
@@ -78,7 +80,21 @@ def get_argparse() -> argparse.Namespace:
                         help="The output file for the tree. If used, the program does not run interactive directory building.",
                         default=None)
 
-    return parser.parse_args()
+    parser.add_argument("-e", "--empty_directory",
+                        help="Start the program with an empty directory. Cannot be used with -o or -i (they will be ignored).",
+                        action="store_true")
+
+    args = parser.parse_args()
+
+    check_args_combinations(args)
+
+    return args
+
+
+def check_args_combinations(args) -> None:
+    if args.empty_directory:
+        args.input_file = None
+        args.output_file = None
 
 
 def get_parent_path() -> "PosixPath":
@@ -99,9 +115,16 @@ def instantiate_directory_object(parent_directory_name, directory_list) -> Direc
     :rtype: DirectoryAsset
     """
     directory_asset = DirectoryAsset(name=parent_directory_name, level=2)
-    directory_asset.populate_directories(directory_list)
+
+    # only run the following code if directory_list is populated
+    if directory_list:
+        directory_asset.populate_directories(directory_list)
     return directory_asset
 
 
 if __name__ == "__main__":
+    # Not super efficient, but calling args before curses is called.
+    # This way, help can be ran before curses takes over stdout.
+    # Args will also be called inside of main.
+    args = get_argparse()
     curses.wrapper(main)

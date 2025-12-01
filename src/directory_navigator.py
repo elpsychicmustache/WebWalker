@@ -117,7 +117,14 @@ class DirectoryNavigator:
         """
         self.stdscr.clear()
 
-        directory_list = self.current_directory.get_asset_list()
+        try:
+            directory_list = self.current_directory.get_asset_list()
+        except IndexError as e:
+            self.stdscr.addstr(0, 0, str(e), self.RED_ALERT)
+            exit_banner = "Press ENTER ..."
+            self.stdscr.addstr(1, 0, exit_banner)
+            self.stdscr.getch(1, len(exit_banner))
+            return  # exit this function
 
         last_available_line = curses.LINES - 1
 
