@@ -23,6 +23,8 @@ class DirectoryNavigator:
 
         :param current_directory: The DirectoryAsset that should be the 'focal' point for the navigator.
         :type current_directory: DirectoryAsset
+        :param stdscr: The curses window to display and grab input.
+        :type stdscr: curses.window
         """
         self.main_options = self.create_options_menu()
 
@@ -79,7 +81,6 @@ class DirectoryNavigator:
 
         self.stdscr.refresh()
 
-        # self.main_options.get(option)[1]()  # [1] is the function, so must use () to call the function
         while option != max(self.main_options.keys()):
             # run the function that was requested
             self.main_options[option][1]()
@@ -96,7 +97,6 @@ class DirectoryNavigator:
 
     def show_main_menu(self) -> int:
         """Displays the main menu options."""
-        #_clear_screen()
         banner = f"[+] Currently in '{self.current_directory.name}': {len(DirectoryAsset.master_list)} directories exist"
         self.stdscr.addstr(0,0, banner, curses.A_REVERSE)
 
@@ -117,6 +117,7 @@ class DirectoryNavigator:
         """
         self.stdscr.clear()
 
+        # This block of code is needed to handle directories with no children.
         try:
             directory_list = self.current_directory.get_asset_list()
         except IndexError as e:
@@ -126,6 +127,7 @@ class DirectoryNavigator:
             self.stdscr.getch(1, len(exit_banner))
             return  # exit this function
 
+        # Determines how many directory lines can be shown at once.
         last_available_line = curses.LINES - 1
 
         # The following lines print the directories to the screen, one window at a time.
@@ -164,6 +166,7 @@ class DirectoryNavigator:
         """
         self.stdscr.clear()
 
+        # This block of code grabs and handles getting the child's name.
         input_banner = "[+] Please enter the name of the child directory: "
         self.stdscr.addstr(0, 0, input_banner)
         child_name:str = self.stdscr.getstr(0, len(input_banner)).decode()
@@ -175,11 +178,12 @@ class DirectoryNavigator:
             self.stdscr.getch(1, 0)
             return  # end this function
 
+        # This block of code grabs the input file name.
         file_input_banner = "[+] Please enter the name of the file from which to populate the directory: "
         self.stdscr.addstr(1, 0, file_input_banner)
         file_name:str = self.stdscr.getstr(1, len(file_input_banner)).decode()
 
-        # Depending on what happens, tell the user the file was found or not found.
+        # Tell the user the file was found and children populated, or file was not found.
         try:
             self.current_directory.populate_child_directories(child_name, file_name)
         except FileNotFoundError:
@@ -200,12 +204,14 @@ class DirectoryNavigator:
         This calls the add_child() method for the current_directory object.
         Interaction and child object creation is implemented in this function.
         """
+        # Show the user what directory they are in.
         self.stdscr.clear()
         banner = f"[+] Currently in '{self.current_directory.name}': {len(DirectoryAsset.master_list)} directories exist"
         self.stdscr.addstr(0,0, banner, curses.A_REVERSE)
 
         input_message = "Please enter the child's name: "
         self.stdscr.addstr(1, 0, input_message)
+
         child_name = self.stdscr.getstr(1, len(input_message)).decode()
         child = DirectoryAsset(name=child_name, parent=self.current_directory, level=self.current_directory.level+2)
         self.current_directory.add_child(child)
@@ -240,8 +246,15 @@ class DirectoryNavigator:
         self.stdscr.getch(1, len(closing_message))
 
     def save_directory(self) -> None:
+        """Save the current directory tree to a file.
+
+        This method prompts the user for the name of a file to save the directory tree to.
+        This file defaults to 'output.txt' if nothing is provided, and will be saved inside of the 'data' folder
+        of the project's root directory.
+        """
         self.stdscr.clear()
 
+        # Show user current directory information.
         banner = f"[+] Currently in '{self.current_directory.name}': {len(DirectoryAsset.master_list)} directories exist"
         self.stdscr.addstr(0,0, banner, curses.A_REVERSE)
 
