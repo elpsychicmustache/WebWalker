@@ -20,6 +20,18 @@ class DirectoryAsset():
         :param children: A dictionary containing the child's name, and the child DirectoryAsset object.
         :type children: dict[str, DirectoryAsset]
         """
+        # Checking if the directory already exists. If so, raise an error.
+        try:
+            directory_index = [directory.name for directory in DirectoryAsset.master_list].index(name)
+        except ValueError:
+            pass
+        else:
+            # If the parent has a name, then show it. Otherwise, just tell user the directory already exists.
+            if DirectoryAsset.master_list[directory_index].parent:
+                raise ValueError(f"[!] Cannot create {name} - it already exists as a parent to {DirectoryAsset.master_list[directory_index].parent.name}")
+            else:
+                raise ValueError(f"[!] Cannot create {name} - it already exists as a directory.")
+
         self.name = name
         self.level = level
         self.parent = parent
@@ -63,8 +75,14 @@ class DirectoryAsset():
                 directories_to_add.add(directory)
 
         for directory in directories_to_add:
-            child_directory = DirectoryAsset(directory, level=self.level+2, parent=self)
-            self.add_child(child_directory)  # this creates the dictionary entry for children
+            # Ignore ValueErrors raised by object creation if the directory already exists.
+            # Removing the try/except block will cause errors when trying to bulk add entries.
+            try:
+                child_directory = DirectoryAsset(directory, level=self.level+2, parent=self)
+            except ValueError:
+                pass
+            else:
+                self.add_child(child_directory)  # this creates the dictionary entry for children
 
     def add_child(self, child:"DirectoryAsset"=None) -> None:
         """Add a single child to self.
@@ -72,6 +90,7 @@ class DirectoryAsset():
         :param child: The DirectoryAsset to as a child to self. Defaults to None.
         :type child: DirectoryAsset
         """
+
         child.parent_directory = self
 
         self.children.setdefault(child.name, child)  # adding child as directory

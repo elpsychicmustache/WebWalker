@@ -216,13 +216,20 @@ class DirectoryNavigator:
         self.stdscr.addstr(1, 0, input_message)
 
         child_name = self.stdscr.getstr(1, len(input_message)).decode()
-        child = DirectoryAsset(name=child_name, parent=self.current_directory, level=self.current_directory.level+2)
-        self.current_directory.add_child(child)
+        try:
+            child = DirectoryAsset(name=child_name, parent=self.current_directory, level=self.current_directory.level+2)
+        except ValueError as e:
+            self.stdscr.addstr(2, 0, str(e), self.RED_ALERT)
+            closing_message = "Nothing happened. Press ENTER ..."
+            self.stdscr.addstr(3, 0, closing_message)
+            self.stdscr.getch(3, len(closing_message))
+        else:
+            self.current_directory.add_child(child)
 
-        self.stdscr.addstr(2, 0, f"[+] {child_name} has been added to {self.current_directory.name}", self.GREEN_ALERT)
-        closing_message = "Press ENTER ..."
-        self.stdscr.addstr(3, 0, closing_message)
-        self.stdscr.getch(3, len(closing_message))
+            self.stdscr.addstr(2, 0, f"[+] {child_name} has been added to {self.current_directory.name}", self.GREEN_ALERT)
+            closing_message = "Press ENTER ..."
+            self.stdscr.addstr(3, 0, closing_message)
+            self.stdscr.getch(3, len(closing_message))
 
     def change_directory(self) -> None:
         """Changes the current_directory attribute.
