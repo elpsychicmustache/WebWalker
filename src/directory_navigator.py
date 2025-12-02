@@ -141,12 +141,15 @@ class DirectoryNavigator:
                 # due to the else statement still incrementing index
                 self.stdscr.addstr(current_print_line, 0, directory_list[index])
                 self.stdscr.addstr(last_available_line, 0, 
-                                   f"{index + 1} out of {len(directory_list)} directories printed. Print any key to continue.", 
+                                   f"{index + 1} out of {len(directory_list)} directories printed. Print any key to continue or q to quit.", 
                                    curses.A_REVERSE
                                    )
                 self.stdscr.refresh()
                 current_print_line = 0
-                self.stdscr.getch()
+                # If user's key input is q, then quit
+                if self.stdscr.getkey().lower() == "q":
+                    self.stdscr.clear()
+                    return
                 self.stdscr.clear()
 
         self.stdscr.addstr(last_available_line, 0,
