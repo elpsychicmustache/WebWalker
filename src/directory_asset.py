@@ -168,12 +168,24 @@ class DirectoryAsset():
 
         self.children[child_directory_name].populate_directories(directories)
 
-    def remove_child(self) -> None:
+    def remove_child(self, child_name:str) -> None:
         """Remove a child directory.
 
         Not currently implemented. Running this does nothing.
         """
-        pass
+        # Figure out if child exists.
+        try:
+            self.children["child_name"]
+        except KeyError:
+            raise ValueError(f"[!] {child_name} is not a valid child directory.")
+            return  # end this function call
+
+        # Remove the child from the children list.
+        directory_object = self.children.pop("child_name")
+        # Remove the child from the master list.
+        DirectoryAsset.master_list.remove(directory_object)
+        # Attempt to delete the child.
+        del directory_object
 
     def create_output_file(self, output_file_name:str="output.txt") -> None:
         """Create an output file of the directory tree.
