@@ -316,7 +316,15 @@ class DirectoryNavigator:
         col_length = self.show_banner(1, 0, input_banner, reverse=False)
         child_name = self.stdscr.getstr(1, col_length).decode()
 
-        self.current_directory.remove_child(child_name)
+        try:
+            self.current_directory.remove_child(child_name)
+        except ValueError as e:
+            self.stdscr.addstr(2, 0, str(e), self.RED_ALERT)
+        else:
+            self.stdscr.addstr(2, 0, f"Removed {child_name} from {self.current_directory.name}", self.GREEN_ALERT)
+        finally:
+            col_length = self.show_banner(3, 0)
+            self.stdscr.getch(3, col_length)
 
     def quit_program(self) -> None:
         """Clears the screen.
