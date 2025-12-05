@@ -84,11 +84,12 @@ class DirectoryNavigator:
         """
         options = [
                 ("Show directory tree", self.show_current_directory_tree),
+                ("Populate current directory", self.populate_current_directory),
                 ("Populate child directory", self.populate_child_directory),
-                ("Add a directory", self.add_child_directory),
-                ("Change directory", self.change_directory),
+                ("Add a child directory", self.add_child_directory),
+                ("Change to a directory", self.change_directory),
                 ("Save directory tree", self.save_directory),
-                ("Remove a child", self.remove_child_directory),
+                ("Remove a child directory", self.remove_child_directory),
                 # Add any options above "Quit" - that way, quit is last
                 ("Quit", self.quit_program)
                 ]
@@ -186,6 +187,20 @@ class DirectoryNavigator:
 
         self.stdscr.refresh()
         self.stdscr.getch(last_available_line, col_length)
+
+    def populate_current_directory(self) -> None:
+        self.stdscr.clear()
+
+        self.show_banner()
+
+        # Get the file name.
+        input_banner = f"[+] Please enter the name of the file to populate the current directory: "
+        col_length = self.show_banner(1, 0, input_banner, reverse=False)
+        file_name:str = self.stdscr.getstr(1, col_length).decode()
+
+        # Grab file data
+        # Run populate_directory in current_directory.
+        # self.current_directory.populate_directories(
 
     def populate_child_directory(self) -> None:
         """Calling this method evokes the populate_child_directories() for the current_directory attribute.

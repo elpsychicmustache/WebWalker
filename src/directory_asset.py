@@ -1,5 +1,16 @@
 from pathlib import Path
 
+def parse_datafile(input_file:str) -> str:
+    script_path = Path(__file__).resolve()
+    project_root = script_path.parent.parent
+
+   input_file = project_root / "data" / input_file
+
+    with open(input_file, "r") as file:
+        directories = file.read().strip()
+
+    return directories
+
 class DirectoryAsset():
     master_list = []
 
@@ -38,6 +49,7 @@ class DirectoryAsset():
         self.children = children or {}  # children should be like so {child.name, object}
 
         DirectoryAsset.master_list.append(self)  # keeping track of a master list to prevent recursive entries
+
 
     def populate_directories(self, directory_string_list:str) -> None:
         """Populate children directories.
