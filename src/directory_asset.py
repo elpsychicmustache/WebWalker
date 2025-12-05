@@ -1,10 +1,10 @@
 from pathlib import Path
 
-def parse_datafile(input_file:str) -> str:
+def get_datafile(input_file:str) -> str:
     script_path = Path(__file__).resolve()
     project_root = script_path.parent.parent
 
-   input_file = project_root / "data" / input_file
+    input_file = project_root / "data" / input_file
 
     with open(input_file, "r") as file:
         directories = file.read().strip()

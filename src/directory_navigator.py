@@ -1,7 +1,7 @@
 import curses
 import subprocess
 
-from directory_asset import DirectoryAsset
+from directory_asset import DirectoryAsset, get_datafile
 
 def _clear_screen() -> None:
     """Clears the stdout screen."""
@@ -198,9 +198,8 @@ class DirectoryNavigator:
         col_length = self.show_banner(1, 0, input_banner, reverse=False)
         file_name:str = self.stdscr.getstr(1, col_length).decode()
 
-        # Grab file data
-        # Run populate_directory in current_directory.
-        # self.current_directory.populate_directories(
+        input_file = get_datafile(file_name)  # function from directory_asset
+        self.current_directory.populate_directories(input_file)
 
     def populate_child_directory(self) -> None:
         """Calling this method evokes the populate_child_directories() for the current_directory attribute.
