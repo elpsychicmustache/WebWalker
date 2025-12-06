@@ -1,5 +1,22 @@
 from pathlib import Path
 
+from urllib.parse import urlparse
+
+def strip_hostname(path: str) -> str:
+    """Remove scheme://hostname from URLs and return only the path."""
+    try:
+        parsed = urlparse(path)
+        # If it's a valid absolute URL (http/https), keep only the path
+        if parsed.scheme in ("http", "https") and parsed.netloc:
+            clean = parsed.path
+            if not clean.startswith("/"):
+                clean = "/" + clean
+            return clean or "/"
+    except:
+        pass
+    return path
+
+
 def get_datafile(input_file:str) -> str:
     script_path = Path(__file__).resolve()
     project_root = script_path.parent.parent
@@ -76,21 +93,23 @@ class DirectoryAsset():
         directories_to_add = set()
 
         for directory in directories:
-            if directory == self.name:
+            cleaned = strip_hostname(directory)
+
+            if cleaned == self.name:
                 continue
-            elif "#" in directory:
+            elif "#" in cleaned:
                 continue
-            # The following two lines are needed in case the directory exists as a child (or parent) somewhere else.
-            elif directory in [x.name for x in DirectoryAsset.master_list]:
+            elif cleaned in [x.name for x in DirectoryAsset.master_list]:
                 continue
             else:
-                directories_to_add.add(directory)
+                directories_to_add.add(cleaned)
+
 
         for directory in directories_to_add:
             # Ignore ValueErrors raised by object creation if the directory already exists.
             # Removing the try/except block will cause errors when trying to bulk add entries.
             try:
-                child_directory = DirectoryAsset(directory, level=self.level+2, parent=self)
+                child_directory = DirectoryAsset(cleaned, level=self.level+2, parent=self)
             except ValueError:
                 pass
             else:
