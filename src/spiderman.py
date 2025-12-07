@@ -26,6 +26,7 @@ def main(stdscr) -> None:
     args:argparse.Namespace = get_argparse()
     root_directory_name:str = args.root_directory
     output_file:str = args.output_file
+    DirectoryAsset.hostname = args.hostname
 
     project_root:"PosixPath" = get_parent_path()
     directories:str = None
@@ -56,7 +57,6 @@ def main(stdscr) -> None:
     # Else, populate the root directory.
     else:
         main_directory_asset:DirectoryAsset = instantiate_directory_object(parent_directory_name=root_directory_name, directory_list=directories)
-
     # if output_file was provided, then generate outputfile. Otherwise run main loop.
     if args.output_file:
         main_directory_asset.create_output_file(output_file_name=output_file)
@@ -178,6 +178,10 @@ def get_argparse() -> argparse.Namespace:
 
     parser.add_argument("-o", "--output_file",
                         help="The output file for the tree. If used, the program does not run interactive directory building.",
+                        default=None)
+
+    parser.add_argument("-H", "--hostname",
+                        help="The host or target name. Used to remove hostname from url paths so they can be shortened from limited screen space.",
                         default=None)
 
     args = parser.parse_args()
