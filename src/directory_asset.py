@@ -1,20 +1,23 @@
 from pathlib import Path
-
 from urllib.parse import urlparse
 
-def strip_hostname(path: str) -> str:
+
+def strip_hostname(path: str, hostname:str) -> str:
     """Remove scheme://hostname from URLs and return only the path."""
-    try:
-        parsed = urlparse(path)
-        # If it's a valid absolute URL (http/https), keep only the path
-        if parsed.scheme in ("http", "https") and parsed.netloc:
-            clean = parsed.path
-            if not clean.startswith("/"):
-                clean = "/" + clean
-            return clean or "/"
-    except:
-        pass
-    return path
+    #try:
+    parsed = urlparse(path)
+    # If it's a valid absolute URL (http/https), keep only the path
+    if parsed.scheme in ("http", "https") and parsed.netloc == hostname:
+        clean = parsed.path
+        if not clean.startswith("/"):
+            clean = "/" + clean
+        return clean or path
+    else:
+        return path
+    #except:
+        #return path
+
+    #return path
 
 
 def get_datafile(input_file:str) -> str:
@@ -28,8 +31,10 @@ def get_datafile(input_file:str) -> str:
 
     return directories
 
+
 class DirectoryAsset():
-    master_list = []
+    master_list:list = []
+    hostname:str = None
 
 
     def __init__(self, name:str, level:int, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
@@ -93,7 +98,7 @@ class DirectoryAsset():
         directories_to_add = set()
 
         for directory in directories:
-            cleaned = strip_hostname(directory)
+            cleaned = strip_hostname(directory, DirectoryAsset.hostname)
 
             if cleaned == self.name:
                 continue
@@ -104,12 +109,11 @@ class DirectoryAsset():
             else:
                 directories_to_add.add(cleaned)
 
-
         for directory in directories_to_add:
             # Ignore ValueErrors raised by object creation if the directory already exists.
             # Removing the try/except block will cause errors when trying to bulk add entries.
             try:
-                child_directory = DirectoryAsset(cleaned, level=self.level+2, parent=self)
+                child_directory = DirectoryAsset(name=directory, level=self.level+2, parent=self)
             except ValueError:
                 pass
             else:
