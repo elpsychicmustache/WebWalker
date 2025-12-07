@@ -41,22 +41,11 @@ def main(stdscr) -> None:
     # because directories won't work as is (because it is not None and not in the format from walkman.js).
     if args.input_tree:
         directory_list:list[str] = directories.split("\n")
-        parent_child_dict = parse_directory_list(directory_list)
-        # populate the first directory
-        first_key = next(iter(parent_child_dict))
-        main_directory_asset:DirectoryAsset = instantiate_directory_object(parent_directory_name=first_key, directory_list="\n".join(parent_child_dict[first_key]))
-        del parent_child_dict[first_key]
-
-        # populate the rest of the dictionaries
-        for parent, children in parent_child_dict.items():
-            directory_names:list[str] = [directory.name for directory in DirectoryAsset.master_list]
-            parent_index:int = directory_names.index(parent)
-            parent_directory:DirectoryAsset = DirectoryAsset.master_list[parent_index]
-            parent_directory.populate_directories("\n".join(children))
-
+        main_directory_asset:DirectoryAsset = parse_directory_list(directory_list)
     # Else, populate the root directory.
     else:
         main_directory_asset:DirectoryAsset = instantiate_directory_object(parent_directory_name=root_directory_name, directory_list=directories)
+
     # if output_file was provided, then generate outputfile. Otherwise run main loop.
     if args.output_file:
         main_directory_asset.create_output_file(output_file_name=output_file)
@@ -64,29 +53,20 @@ def main(stdscr) -> None:
         navigator = DirectoryNavigator(main_directory_asset, stdscr)
 
 
-def parse_directory_list(directory_list:list[str]) -> dict[str, list[str]]:
+def parse_directory_list(directory_list:list[str]) -> DirectoryAsset:
     """Parse the current output format in a way that can rebuild it as DirectoryAsset objects.
 
-    God be with ye if you must update this. It took a while to figure out how to make this work.
-    Either way, provide it with a list (newline separated) from a DirectoryAsset output file.
-
-    This then figures out the hierarchies and saves them so the directory file can be worked on
-    after quitting the program. There is probably a much easier way of doing this, especially
-    if we can just create DirectoryAsset objects right in this function.
+    This then figures out the hierarchies based on directory_list and saves them so the directory file can be worked on
+    after quitting the program.
 
     :param directory_list: The output file from directory_asset, but split by newlines.
     :type directory_list: list[str]
-    :returns: A parent directory (as a string), with a list of children directories (as strings)
-    :rtype: dict[str, list[str]]
+    :returns: The root parent directory asset.
+    :rtype: DirectoryAsset
     """
-    # dictionary should be in style {parent: [children]}
-    # directory_pointer should be in style {int, parent}
-    # The directory_pointer points to what the parent is for a given level
-    parent_child_dict:dict[str, list[str]] = {}
-    directory_pointer:dict[int, str] = {}
-
     previous_level:int = 0
     current_level:int = 0
+    current_parent:DirectoryAsset = None
 
     # Sorry for the comment offense in the following lines, but this took a while to figure out
     for index, directory in enumerate(directory_list):
@@ -95,47 +75,36 @@ def parse_directory_list(directory_list:list[str]) -> dict[str, list[str]]:
         current_level = directory.find("-")
         directory = directory.replace("-", "", 1).strip()
 
-        # if parent_child_dict does not exist, create it (should only happen first loop)
-        if not parent_child_dict:
-            parent_child_dict[directory] = []
-            directory_pointer[current_level] = directory
+        # if master_list does not exist, create it (should only happen first loop)
+        if not DirectoryAsset.master_list:
+            current_parent = DirectoryAsset(directory)
 
         # If we have entered a new hierarchy
+        # get previously created directory, and add current directory as a child
         elif current_level > previous_level:
-            # check if dictionary previous_level exists
-            parent:str = directory_pointer.get(previous_level)
-            # if so, then populate parent_child_dict as child to parent
-            # this prevents duplicate parent entries
-            if parent_child_dict.get(parent):
-                parent_child_dict[parent].append(directory)
-            # else, create directory_pointer entry with previous_level
-            else:
-                # get previous index's cleaned directory name, and create directory_pointer
-                previous_directory:str = directory_list[index-1].replace("-", "", 1).strip()
-                directory_pointer[previous_level] = previous_directory
-                # then create parent_child_dict and append to that
-                parent_child_dict[previous_directory] = []
-                parent_child_dict[previous_directory].append(directory)
-        # If current_level is same as previous_level, populate the highest level from directory_pointer
-        # since we are at the same hierarchy
+            previous_directory_name:str = directory_list[index-1].replace("-", "", 1).strip()
+            directory_index:int = [x.name for x in DirectoryAsset.master_list].index(previous_directory_name)
+            current_parent = DirectoryAsset.master_list[directory_index]
+            child_directory = DirectoryAsset(name=directory, level=current_parent.level+2, parent=current_parent)
+            current_parent.add_child(child_directory)
+
+        # If we are at the same hierarchy level,
+        # then just populate directory as a child
         elif current_level == previous_level:
-            max_key = max(directory_pointer, key=directory_pointer.get)
-            parent:str = directory_pointer.get(max_key)
-            parent_child_dict[parent].append(directory)
+            child_directory = DirectoryAsset(name=directory, level=current_parent.level+2, parent=current_parent)
+            current_parent.add_child(child_directory)
+
         # If current_level is less than previous_level, we have gone back a hierarchy level
-        # which means we need to delete the highest level from directory_pointer,
-        # grab the new highest level (after deleting) which allows us to
-        # populate the directory from our previous hiearchy
         elif current_level < previous_level:
-            current_max_key = max(directory_pointer, key=directory_pointer.get)
-            del directory_pointer[current_max_key]
-            new_max_key = max(directory_pointer, key=directory_pointer.get)
-            parent:str = directory_pointer[new_max_key]
-            parent_child_dict[parent].append(directory)
+            current_parent = current_parent.parent
+            child_directory = DirectoryAsset(name=directory, level=current_parent.level+2, parent=current_parent)
+            current_parent.add_child(child_directory)
 
         previous_level = current_level
 
-    return parent_child_dict
+    # return the first indexed DirectoryAsset from master_list
+    # because this should be the root directory
+    return DirectoryAsset.master_list[0]
 
 
 def get_argparse() -> argparse.Namespace:

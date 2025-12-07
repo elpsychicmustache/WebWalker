@@ -37,7 +37,7 @@ class DirectoryAsset():
     hostname:str = None
 
 
-    def __init__(self, name:str, level:int, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
+    def __init__(self, name:str, level:int=2, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
         """Create a DirectoryAsset object, which represents a directory with a possible parent or children nodes.
 
         To prevent recursion, a DirectoryAsset should only have one parent node. Any instantiated DirectoryAsset will be added to the
