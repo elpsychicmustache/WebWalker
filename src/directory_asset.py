@@ -36,6 +36,14 @@ class DirectoryAsset():
     master_list:list = []
     hostname:str = None
 
+    def nuke_directory():
+        """This function call nukes the entire DirectoryAsset's existing directory tree.
+
+        Currently, the only thing that needs to happen is clear master_list, but there may
+        be other things needed in the future that this method can use.
+        """
+        DirectoryAsset.master_list = []
+
 
     def __init__(self, name:str, level:int=2, parent:"DirectoryAsset"=None, children:dict[str, "DirectoryAsset"]=None) -> None:
         """Create a DirectoryAsset object, which represents a directory with a possible parent or children nodes.

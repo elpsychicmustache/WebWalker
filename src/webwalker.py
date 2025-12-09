@@ -43,8 +43,8 @@ def main(stdscr) -> None:
             with open(input_file, "r") as file:
                 directories:str = file.read().strip()
     except FileNotFoundError:
-        stdscr.addstr(0, 0, f"[!] {input_file} was not found. Populating an empty directory.")
-        stdscr.addstr(1, 0, "Press ENTER ...")
+        stdscr.addstr(0, 0, f"[!] {input_file} was not found. Populating an empty directory.", curses.COLOR_RED)
+        stdscr.addstr(1, 0, "Press ENTER ...", curses.A_REVERSE)
         stdscr.getch()
         valid_file_found = False
 
@@ -52,7 +52,15 @@ def main(stdscr) -> None:
     # because directories won't work as is (because it is not None and not in the format from walkman.js).
     if args.input_tree and valid_file_found:
         directory_list:list[str] = directories.split("\n")
-        main_directory_asset:DirectoryAsset = parse_directory_list(directory_list)
+        try:
+            main_directory_asset:DirectoryAsset = parse_directory_list(directory_list)
+        except AttributeError:
+            stdscr.addstr(0, 0, f"[!] There appears to be something wrong with {input_file}. Populating an empty directory instead.", curses.COLOR_RED)
+            stdscr.addstr(1, 0, "Press ENTER ...", curses.A_REVERSE)
+            stdscr.getch()
+            # clearing any created values, and then creating an empty directory
+            DirectoryAsset.nuke_directory()
+            main_directory_asset:DirectoryAsset = instantiate_directory_object(parent_directory_name=root_directory_name, directory_list=None)
     # Else, populate the root directory.
     else:
         main_directory_asset:DirectoryAsset = instantiate_directory_object(parent_directory_name=root_directory_name, directory_list=directories)
