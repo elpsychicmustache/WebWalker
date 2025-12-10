@@ -79,6 +79,7 @@ class DirectoryNavigator:
                 ("Add a child directory", self.add_child_directory),
                 ("Change to a directory", self.change_directory),
                 ("Remove a child directory", self.remove_child_directory),
+                ("Show asset details", self.show_asset_details),
                 ("Save directory tree", self.save_directory),
                 # Add any options above "Quit" - that way, quit is last
                 ("Quit", self.quit_program)
@@ -333,6 +334,11 @@ class DirectoryNavigator:
         finally:
             col_length = self.show_banner(3, 0)
             self.stdscr.getch(3, col_length)
+
+    def show_asset_details(self) -> None:
+        """Shows current_directory's object details."""
+        
+        pass
 
     def quit_program(self) -> None:
         """Clears the screen.
