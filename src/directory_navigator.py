@@ -139,7 +139,11 @@ class DirectoryNavigator:
 
         # This block of code is needed to handle directories with no children.
         try:
-            directory_list = self.current_directory.get_asset_list()
+            directory_list:list = (
+                    self.current_directory.get_asset_list_string()
+                    .rstrip()
+                    .split("\n")
+                    )
         except IndexError as e:
             self.stdscr.addstr(0, 0, str(e), self.RED_ALERT)
             exit_banner = "Press ENTER ..."

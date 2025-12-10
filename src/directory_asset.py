@@ -140,54 +140,29 @@ class DirectoryAsset():
         """Sorts children directories by alphabetical order."""
         self.children = dict(sorted(self.children.items()))
 
-    def get_asset_list_string(self) -> str:
+    def get_asset_list_string(self, first_call=True) -> str:
         """Return the directory tree as a string from the perspective of self.
 
+        :param first_call: Used to prevent double printing of name attributes. Recommended to not touch this. DEFAULTS to true.
+        :type first_call: bool
         :returns: The directory tree as a string.
         :rtype: str
         """
 
-        # The following two lines are needed to prevent double printing of directory names
-        # between child and parent. However, this has the unintended consequence of
-        # not printing self.name if self is a child to a DirectoryAsset.
         return_string = ""
-
-        if not self.parent:
-            return_string += "- " + self.name + "\n"
-            # print("- " + self.name)
-        if not self.children:
-            return_string += f"No subdirectories found for {self.name}"
-            # print(f"[!] No subdirectories found for {self.name}")
-            return  # exit the function
-
-        for directory in self.children.keys():
-            return_string += " " * self.level
-            # print(" " * self.level, end="")
-            return_string += "- " + directory + "\n"
-            # print("- " + directory)
-            if self.children[directory].children:
-                return_string += self.children[directory].get_asset_list_string()
-
-        return return_string
-
-    def get_asset_list(self) -> list[str]:
-        """Returns a list version of get_asset_list_string()
-
-        :returns: A list containing the names of the directory assets.
-        :rtype: list[str]
-        """
-        asset_list = []
 
         if not self.children:
             raise IndexError(f"[!] No subdirectories found for {self.name}")
-        if not self.parent:
-            asset_list.append("- " + self.name)
-        for directory in self.children.keys():
-            asset_list.append(" "*self.level + "- " + directory)
-            if self.children[directory].children:
-                asset_list = asset_list + self.children[directory].get_asset_list()
+        if first_call:
+            return_string += "- " + self.name + "\n"
 
-        return asset_list
+        for directory in self.children.keys():
+            return_string += " " * self.level
+            return_string += "- " + directory + "\n"
+            if self.children[directory].children:
+                return_string += self.children[directory].get_asset_list_string(first_call=False)
+
+        return return_string
 
     def populate_child_directories(self, child_directory_name:str, input_file_name:str) -> None:
         """Running this method allows the user to populate children directores from a directly linked child node.
