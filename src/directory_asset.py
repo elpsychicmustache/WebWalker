@@ -2,23 +2,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 
-def strip_hostname(path: str, hostname:str) -> str:
-    """Remove scheme://hostname from URLs and return only the path."""
-    #try:
+def parse_url_info(path: str) -> str:
+    """Parse url information and return the information in separate information."""
     parsed = urlparse(path)
-    # If it's a valid absolute URL (http/https), keep only the path
-    if parsed.scheme in ("http", "https") and parsed.netloc == hostname:
-        clean = parsed.path
-        if not clean.startswith("/"):
-            clean = "/" + clean
-        return clean or path
-    else:
-        return path
-    #except:
-        #return path
 
-    #return path
-
+    return (parsed.scheme, parsed.netloc, parsed.path, parsed.params, parsed.query, parsed.fragment)
 
 def get_datafile(input_file:str) -> str:
     script_path = Path(__file__).resolve()
@@ -73,10 +61,20 @@ class DirectoryAsset():
             else:
                 raise ValueError(f"[!] Cannot create {name} - it already exists as a directory.")
 
-        self.name = name
+        self.name = name  # the full URL
         self.level = level
         self.parent = parent
         self.children = children or {}  # children should be like so {child.name, object}
+
+        # urllib parsed information
+        self.scheme:str = None
+        self.netloc:str = None
+        self.path:str = None
+        self.params:str = None
+        self.query:str = None
+        self.fragment:str = None
+
+        self.scheme, self.netloc, self.path, self.params, self.query, self.fragment = parse_url_info(self.name)
 
         DirectoryAsset.master_list.append(self)  # keeping track of a master list to prevent recursive entries
 
@@ -106,16 +104,15 @@ class DirectoryAsset():
         directories_to_add = set()
 
         for directory in directories:
-            cleaned = strip_hostname(directory, DirectoryAsset.hostname)
 
-            if cleaned == self.name:
+            if directory == self.name:
                 continue
-            elif "#" in cleaned:
+            elif "#" in directory:
                 continue
-            elif cleaned in [x.name for x in DirectoryAsset.master_list]:
+            elif directory in [x.name for x in DirectoryAsset.master_list]:
                 continue
             else:
-                directories_to_add.add(cleaned)
+                directories_to_add.add(directory)
 
         for directory in directories_to_add:
             # Ignore ValueErrors raised by object creation if the directory already exists.
