@@ -1,16 +1,6 @@
 import curses
-import subprocess
 
 from directory_asset import DirectoryAsset, get_datafile
-
-def _clear_screen() -> None:
-    """Clears the stdout screen."""
-    subprocess.run("clear")
-
-
-def _enter_to_continue() -> None:
-    """Pauses the program by asking the user to press ENTER to continue"""
-    input("Press ENTER to continue...")
 
 
 class DirectoryNavigator:
@@ -102,20 +92,14 @@ class DirectoryNavigator:
         This loops continuously until the user provides the quit option, or an
         unhandled error occurs.
         """
-        self.stdscr.clear()
-        current_display_line = self.show_main_menu()
-
-        # The following lines get the users input.
-        input_display = "[+] Please enter your option: "
-        self.stdscr.addstr(current_display_line, 0, input_display)
-        option = self.stdscr.getkey(current_display_line, len(input_display)) # show cursor after input_display
-        option = int(option)
-
-        self.stdscr.refresh()
+        option:int = None
 
         while option != max(self.main_options.keys()):
-            # run the function that was requested
-            self.main_options[option][1]()
+            # run the function that was requested, unless an error occured, then do nothing.
+            try:
+                self.main_options[option][1]()
+            except KeyError:
+                pass
 
             self.stdscr.clear()
             # reshow main menu
@@ -124,8 +108,12 @@ class DirectoryNavigator:
             # The following lines get the users input.
             input_display = "[+] Please enter your option: "
             self.stdscr.addstr(current_display_line, 0, input_display)
-            option = self.stdscr.getkey(current_display_line, len(input_display)) # show cursor after input_display
-            option = int(option)
+            # try to get the user's requested option. If an invalid input was provided, do nothing.
+            try:
+                option = self.stdscr.getkey(current_display_line, len(input_display)) # show cursor after input_display
+                option = int(option)
+            except ValueError:
+                pass
 
     def show_main_menu(self) -> int:
         """Displays the main menu options."""
