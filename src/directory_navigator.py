@@ -112,10 +112,17 @@ class DirectoryNavigator:
 
             self.stdscr.clear()
             # reshow main menu
-            window_y, window_x = self.show_main_menu(current_line)
+            window_y, window_x, window_end_y, window_end_x = self.show_main_menu(current_line)
 
-            message = f"You are in '{self.current_directory.name}' directory. {len(DirectoryAsset.master_list)} directories exist."
-            self.stdscr.addstr(window_y-1, (curses.COLS - len(message)) // 2, message, curses.A_REVERSE)
+            message = "WebWalker"
+            self.stdscr.addstr(window_y, (curses.COLS - len(message)) // 2, message, curses.A_BOLD)
+            if len(DirectoryAsset.master_list) == 1:
+                message = f"You are in '{self.current_directory.name}' directory. 1 directory exists."
+            else:
+                message = f"You are in '{self.current_directory.name}' directory. {len(DirectoryAsset.master_list)} directories exist."
+            self.stdscr.addstr(window_end_y, (curses.COLS - len(message)) // 2, message, curses.A_BOLD)
+
+            self.stdscr.refresh()
 
             key = self.stdscr.getkey()
 
@@ -129,7 +136,7 @@ class DirectoryNavigator:
                 option = max_option  # max_option should always be quit
 
 
-    def show_main_menu(self, selected_line:int=0) -> tuple[int, curses.window]:
+    def show_main_menu(self, selected_line:int=0) -> tuple[int, int, int, int]:
         """Displays the main menu options."""
 
         # finding the midpoint of the screen, so that options can be printed in the middle
@@ -154,9 +161,10 @@ class DirectoryNavigator:
         menu_win.border()
         self.stdscr.refresh()
         y, x = menu_win.getbegyx()
+        end_y, end_x = menu_win.getmaxyx()
         del menu_win  # deleting this window
 
-        return y,x
+        return (y,x,y+end_y,x+end_x)
 
     def show_current_directory_tree(self) -> None:
         """This method shows the current directory tree.
