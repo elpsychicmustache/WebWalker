@@ -85,7 +85,7 @@ class DirectoryNavigator:
                 ("Quit", self.quit_program)
                 ]
 
-        return {option_number: option_tuple for option_number, option_tuple in enumerate(options, start=1)}
+        return {option_number: option_tuple for option_number, option_tuple in enumerate(options, start=0)}
 
     def enter_main_loop(self):
         """Calling this evokes the main loop for DirectoryNavigator.
@@ -93,40 +93,78 @@ class DirectoryNavigator:
         This loops continuously until the user provides the quit option, or an
         unhandled error occurs.
         """
+
+        current_line:int = 0  # setting current_line to 0 so that first option is selected
+        min_option:int = 0
+        max_option:int = max(self.main_options.keys())
         option:int = None
 
         while option != max(self.main_options.keys()):
             # run the function that was requested, unless an error occured, then do nothing.
             try:
+                curses.curs_set(1)
                 self.main_options[option][1]()
+                option = None  # set option back to None to prevent infinite loop of running option
             except KeyError:
                 pass
 
+            curses.curs_set(0)  # hide cursor
+
             self.stdscr.clear()
             # reshow main menu
-            current_display_line = self.show_main_menu()
+            window_y, window_x, window_end_y, window_end_x = self.show_main_menu(current_line)
 
-            # The following lines get the users input.
-            input_display = "[+] Please enter your option: "
-            self.stdscr.addstr(current_display_line, 0, input_display)
-            # try to get the user's requested option. If an invalid input was provided, do nothing.
-            try:
-                option = self.stdscr.getkey(current_display_line, len(input_display)) # show cursor after input_display
-                option = int(option)
-            except ValueError:
-                pass
+            message = "WebWalker"
+            self.stdscr.addstr(window_y, (curses.COLS - len(message)) // 2, message, curses.A_BOLD)
+            if len(DirectoryAsset.master_list) == 1:
+                message = f"You are in '{self.current_directory.name}' directory. 1 directory exists."
+            else:
+                message = f"You are in '{self.current_directory.name}' directory. {len(DirectoryAsset.master_list)} directories exist."
+            self.stdscr.addstr(window_end_y, (curses.COLS - len(message)) // 2, message, curses.A_BOLD)
 
-    def show_main_menu(self) -> int:
+            self.stdscr.refresh()
+
+            key = self.stdscr.getkey()
+
+            if key in ["j", "KEY_DOWN"] and current_line < max_option:
+                current_line += 1
+            elif key in ["k", "KEY_UP"] and current_line > min_option:
+                current_line -= 1
+            elif key in ["l", "KEY_ENTER", "\n", "\r"]:
+                option = current_line
+            elif key in ["q"]:
+                option = max_option  # max_option should always be quit
+
+
+    def show_main_menu(self, selected_line:int=0) -> tuple[int, int, int, int]:
         """Displays the main menu options."""
-        self.show_banner()
 
+        # finding the midpoint of the screen, so that options can be printed in the middle
+        longest_option = len(max([option[0] for option in self.main_options.values()], key=len))
+
+        mid_height = (curses.LINES - len(self.main_options)) // 2  # mid-height being adjusted for # of options
+        mid_cols = (curses.COLS - longest_option) // 2  # mid-width being adjusted for length of longest option
+        height = len(self.main_options) + 2  # compensating for a bit more height
+        width = longest_option + 2
+        menu_win = self.stdscr.subwin(height, width, mid_height, mid_cols)
+
+        # keeps track of the offset from mid_height to display each item
         current_display_line:int = 1
 
         for (key, option) in self.main_options.items():
-            self.stdscr.addstr(current_display_line, 0, f"{key} - {option[0]}")
+            if selected_line == current_display_line - 1:
+                menu_win.addstr(0 + current_display_line, 1, f"{option[0]}", curses.A_REVERSE)
+            else:
+                menu_win.addstr(0 + current_display_line, 1, f"{option[0]}")
             current_display_line += 1
 
-        return current_display_line
+        menu_win.border()
+        self.stdscr.refresh()
+        y, x = menu_win.getbegyx()
+        end_y, end_x = menu_win.getmaxyx()
+        del menu_win  # deleting this window
+
+        return (y,x,y+end_y,x+end_x)
 
     def show_current_directory_tree(self) -> None:
         """This method shows the current directory tree.
