@@ -94,14 +94,9 @@ class DirectoryNavigator:
         unhandled error occurs.
         """
 
-        # Show main menu with current option selected
-        current_line:int = 0
+        current_line:int = 0  # setting current_line to 0 so that first option is selected
         min_option:int = 0
         max_option:int = max(self.main_options.keys())
-        # If user presses UP_ARROW/K then move up menu (reshow menu)
-        # If user pressed DOWN_ARROW/J then move down menu (reshow menu)
-        # If user presses ENTER/Space then populate option with that
-
         option:int = None
 
         while option != max(self.main_options.keys()):
@@ -113,11 +108,14 @@ class DirectoryNavigator:
             except KeyError:
                 pass
 
-            curses.curs_set(0)
+            curses.curs_set(0)  # hide cursor
 
             self.stdscr.clear()
             # reshow main menu
-            current_display_line = self.show_main_menu(current_line)
+            window_y, window_x = self.show_main_menu(current_line)
+
+            message = f"You are in '{self.current_directory.name}' directory. {len(DirectoryAsset.master_list)} directories exist."
+            self.stdscr.addstr(window_y-1, (curses.COLS - len(message)) // 2, message, curses.A_REVERSE)
 
             key = self.stdscr.getkey()
 
@@ -155,9 +153,10 @@ class DirectoryNavigator:
 
         menu_win.border()
         self.stdscr.refresh()
+        y, x = menu_win.getbegyx()
         del menu_win  # deleting this window
 
-        return current_display_line
+        return y,x
 
     def show_current_directory_tree(self) -> None:
         """This method shows the current directory tree.
