@@ -125,30 +125,37 @@ class DirectoryNavigator:
                 current_line += 1
             elif key in ["k", "KEY_UP"] and current_line > min_option:
                 current_line -= 1
-            elif key in ["l", "KEY_ENTER"]:
+            elif key in ["l", "KEY_ENTER", "\n", "\r"]:
                 option = current_line
             elif key in ["q"]:
                 option = max_option  # max_option should always be quit
 
 
-    def show_main_menu(self, selected_line:int=0) -> int:
+    def show_main_menu(self, selected_line:int=0) -> tuple[int, curses.window]:
         """Displays the main menu options."""
-        self.show_banner()
 
         # finding the midpoint of the screen, so that options can be printed in the middle
         longest_option = len(max([option[0] for option in self.main_options.values()], key=len))
-        mid_height = (curses.LINES - len(self.main_options)) // 2
-        mid_cols = (curses.COLS - longest_option) // 2
+
+        mid_height = (curses.LINES - len(self.main_options)) // 2  # mid-height being adjusted for # of options
+        mid_cols = (curses.COLS - longest_option) // 2  # mid-width being adjusted for length of longest option
+        height = len(self.main_options) + 2  # compensating for a bit more height
+        width = longest_option + 2
+        menu_win = self.stdscr.subwin(height, width, mid_height, mid_cols)
 
         # keeps track of the offset from mid_height to display each item
         current_display_line:int = 1
 
         for (key, option) in self.main_options.items():
             if selected_line == current_display_line - 1:
-                self.stdscr.addstr(mid_height + current_display_line, mid_cols, f"{option[0]}", curses.A_REVERSE)
+                menu_win.addstr(0 + current_display_line, 1, f"{option[0]}", curses.A_REVERSE)
             else:
-                self.stdscr.addstr(mid_height + current_display_line, mid_cols, f"{option[0]}")
+                menu_win.addstr(0 + current_display_line, 1, f"{option[0]}")
             current_display_line += 1
+
+        menu_win.border()
+        self.stdscr.refresh()
+        del menu_win  # deleting this window
 
         return current_display_line
 
