@@ -202,7 +202,7 @@ class DirectoryNavigator:
 
         treepad.addstr(0, 0, directory_list)
         shown_lines:int = 0
-        while shown_lines <= number_directories:
+        while shown_lines < number_directories:
             self.stdscr.addstr(0, 0, f"Directory tree for {self.current_directory.name}", curses.A_BOLD)
             self.stdscr.noutrefresh()
             treepad.noutrefresh(shown_lines, 0, 1, 0, max_line, max_col)
@@ -210,12 +210,27 @@ class DirectoryNavigator:
             key = treepad.getkey()
             if key in ["j", "KEY_DOWN"]:
                 self.stdscr.clear()
-                shown_lines += (max_line - 1)
+                shown_lines += (max_line)
+                if shown_lines < 0:
+                    shown_lines = 0
+            elif key in ["J"]:
+                self.stdscr.clear()
+                shown_lines += 1
+                if shown_lines < 0:
+                    shown_lines = 0
             elif key in ["k", "KEY_UP"] and shown_lines > 0:
                 self.stdscr.clear()
-                shown_lines -= (max_line - 1)
+                shown_lines -= (max_line)
+            elif key in ["K"]:
+                self.stdscr.clear()
+                shown_lines -= 1
             elif key in ["q"]:
                 return
+
+            # move shown_lines to 0 if it less than 0
+            # that way, the user doesn't have to press down a lot if they went up a bunch
+            if shown_lines < 0:
+                shown_lines = 0
 
 
 
