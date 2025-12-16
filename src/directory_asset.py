@@ -158,11 +158,7 @@ class DirectoryAsset():
 
         for directory in self.children.keys():
             return_string += " " * self.level
-            if DirectoryAsset.hostname and DirectoryAsset.hostname == self.children[directory].netloc:
-                return_string += "- " + self.children[directory].path + "\n"
-            else:
-                return_string += "- " + directory + "\n"
-
+            return_string += "- " + directory + "\n"
             if self.children[directory].children:
                 return_string += self.children[directory].get_asset_list_string(first_call=False)
 
