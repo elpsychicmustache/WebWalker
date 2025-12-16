@@ -124,7 +124,12 @@ class DirectoryNavigator:
 
             self.stdscr.refresh()
 
-            key = self.stdscr.getkey()
+            try:
+                key = self.stdscr.getkey()
+            except KeyboardInterrupt:
+                # Ctrl+C at main menu → exit program
+                raise
+
 
             if key in ["j", "KEY_DOWN"] and current_line < max_option:
                 current_line += 1
@@ -207,7 +212,11 @@ class DirectoryNavigator:
             self.stdscr.noutrefresh()
             treepad.noutrefresh(shown_lines, 0, 1, 0, max_line, max_col)
             curses.doupdate()
-            key = treepad.getkey()
+            try:
+                key = treepad.getkey()
+            except KeyboardInterrupt:
+                return
+
             # if user presses j or KEY_DOWN, then move the screen down a whole screen
             if key in ["j", "KEY_DOWN"]:
                 self.stdscr.clear()
@@ -245,7 +254,11 @@ class DirectoryNavigator:
         # Get the file name.
         input_banner = f"[+] Please enter the name of the file to populate the current directory: "
         col_length = self.show_banner(1, 0, input_banner, reverse=False)
-        file_name:str = self.stdscr.getstr(1, col_length).decode()
+        try:
+            file_name:str = self.stdscr.getstr(1, col_length).decode()
+        except KeyboardInterrupt:
+            return
+
 
         try:
             input_file = get_datafile(file_name)  # function from directory_asset
