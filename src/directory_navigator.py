@@ -137,7 +137,7 @@ class DirectoryNavigator:
 
 
     def show_main_menu(self, selected_line:int=0) -> tuple[int, int, int, int]:
-        """Displays the main menu options."""
+        """Displays the main menu opc476a6117899a01412145b8e1372d637f5c3ec5ctions."""
 
         # finding the midpoint of the screen, so that options can be printed in the middle
         longest_option = len(max([option[0] for option in self.main_options.values()], key=len))
@@ -208,22 +208,27 @@ class DirectoryNavigator:
             treepad.noutrefresh(shown_lines, 0, 1, 0, max_line, max_col)
             curses.doupdate()
             key = treepad.getkey()
+            # if user presses j or KEY_DOWN, then move the screen down a whole screen
             if key in ["j", "KEY_DOWN"]:
                 self.stdscr.clear()
                 shown_lines += (max_line)
                 if shown_lines < 0:
                     shown_lines = 0
+            # if user presses SHIFT-J, then move the screen down by one line
             elif key in ["J"]:
                 self.stdscr.clear()
                 shown_lines += 1
                 if shown_lines < 0:
                     shown_lines = 0
+            # if user presses k or KEY_UP, then move the screen up by a whole screen
             elif key in ["k", "KEY_UP"] and shown_lines > 0:
                 self.stdscr.clear()
                 shown_lines -= (max_line)
+            # if user presses SHIFT-K, then move the screen up by one line
             elif key in ["K"]:
                 self.stdscr.clear()
                 shown_lines -= 1
+            # Exit if user presses q
             elif key in ["q"]:
                 return
 
@@ -231,37 +236,6 @@ class DirectoryNavigator:
             # that way, the user doesn't have to press down a lot if they went up a bunch
             if shown_lines < 0:
                 shown_lines = 0
-
-
-
-        # The following lines print the directories to the screen, one window at a time.
-        """
-        current_print_line = 0
-        for index in range(len(directory_list)):
-            if current_print_line < last_available_line-1:  # keeping last_available_line for status
-                self.stdscr.addstr(current_print_line, 0, directory_list[index])
-                current_print_line += 1
-            else:
-                # Printing the last directory that can be shown here; otherwise, we lose 1 directory every refresh
-                # due to the else statement still incrementing index
-                self.stdscr.addstr(current_print_line, 0, directory_list[index])
-
-                col_length:int = self.show_banner(y=last_available_line, x=0,
-                                                  message=f"{index + 1} out of {len(directory_list)} directories printed. Print any key to continue or q to quit."
-                                                  )
-                self.stdscr.refresh()
-                current_print_line = 0
-                # If user's key input is q, then quit
-                if self.stdscr.getkey(last_available_line, col_length).lower() == "q":
-                    self.stdscr.clear()
-                    return
-                self.stdscr.clear()
-
-        col_length:int = self.show_banner(y=last_available_line, x=0, message=f"All directories printed. Press any key to exit.")
-
-        self.stdscr.refresh()
-        self.stdscr.getch(last_available_line, col_length)
-        """
 
     def populate_current_directory(self) -> None:
         self.stdscr.clear()
@@ -283,7 +257,7 @@ class DirectoryNavigator:
             self.current_directory.populate_directories(input_file)
 
     def populate_child_directory(self) -> None:
-        """Calling this method evokes the populate_child_directories() for the current_directory attribute.
+        """Calling this method invokes the populate_child_directories() for the current_directory attribute.
 
         The method should walk the user through creation of the child directory, based on the directory name and the input file's name.
 
